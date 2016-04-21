@@ -5,50 +5,85 @@ import {
 export default class FacebookService extends Service {
     constructor() {
         super(...arguments);
-        this.init();
         this.status = '';
     }
 
     init() {
-        if (Meteor.isClient) {
-            window.fbAsyncInit = function() {
-                FB.init({
-                    appId: '1701215236807557',
-                    status: true,
-                    xfbml: true,
-                    version: 'v2.6'
-                });
-            };
-        }
-    }
-
-    login() {
-        if (Meteor.isClient) {
-            FB.login(function(response) {
-                this.statusChangeCallback(response);
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId: '1701215236807557',
+                status: true,
+                xfbml: true,
+                version: 'v2.6'
             });
-        }
+        };
     }
 
-    statusChangeCallback(response) {
-        this.status = response.status;
-    }
-
-    getMyLastName() {
+    getMeInformation() {
         var deferred = this.$q.defer();
-        if (Meteor.isClient) {
-            FB.api('/me', {
-                fields: 'last_name'
-            }, function(response) {
-                if (!response || response.error) {
+
+        FB.api('/me', {
+            fields: ['first_name', 'last_name']
+        }, function(response) {
+            if (!response || response.error) {
+                deferred.reject(response.error.message);
+            } else {
+                deferred.resolve(response);
+            }
+        });
+
+        return deferred.promise;
+    }
+
+    getFriends() {
+        var deferred = this.$q.defer();
+
+        /* make the API call */
+        FB.api(
+            "/me/friends",
+            function(response) {
+                if (!response && response.error) {
                     deferred.reject(response.error.message);
                 } else {
                     deferred.resolve(response);
                 }
-            });
-        } else {
-            deferred.reject('FB runs in server side');
-        }
+            }
+        );
+
+        return deferred.promise;
+    }
+
+    getFeed(userId) {
+        var deferred = this.$q.defer();
+
+        /* make the API call */
+        FB.api(
+            "/" + userId + "/feed",
+            function(response) {
+                if (!response && response.error) {
+                    deferred.reject(response.error.message);
+                } else {
+                    deferred.resolve(response);
+                }
+            }
+        );
+
+        return deferred.promise;
+    }
+
+    login() {
+        var deferred = this.$q.defer();
+
+        FB.login(function(response) {
+            if (!response && response.error) {
+                deferred.reject(response.error.message);
+            } else {
+                deferred.resolve(response);
+            }
+        }, {
+            scope: 'user_friends, public_profile'
+        });
+
         return deferred.promise;
     }
 }

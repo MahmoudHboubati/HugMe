@@ -15,7 +15,8 @@ import FacebookController from '../controllers/facebook.controller';
 import FacebookService from '../services/facebook.service';
 
 // Runners
-//import FacebookRunner from '../runners/facebook.runner';
+import FacebookRunner from '../runners/facebook.runner';
+
 // App
 const App = angular.module('HugMe', [
   'angular-meteor',
@@ -23,10 +24,10 @@ const App = angular.module('HugMe', [
 ]);
 
 new Definer(App)
-  //.define(FacebookRunner)
   .define(RoutesConfig)
   .define(FacebookController)
-  .define(FacebookService);
+  .define(FacebookService)
+  .define(FacebookRunner);
 
 // Startup
 if (Meteor.isCordova) {
